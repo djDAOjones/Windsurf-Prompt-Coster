@@ -1,0 +1,11 @@
+{
+  "_comment": "Sample Windsurf Cascade hooks config. Merge the post_cascade_response_with_transcript entry into your real ~/.codeium/windsurf/hooks.json. Replace ABSOLUTE_PATH_TO_REPO with this project's absolute path. IMPORTANT: confirm the exact hooks.json schema against the current docs (https://docs.windsurf.com/windsurf/cascade/hooks) — field names may differ between versions. Use an absolute path; hooks do not run from the repo directory.",
+  "version": 1,
+  "hooks": {
+    "post_cascade_response_with_transcript": [
+      {
+        "command": "node \"ABSOLUTE_PATH_TO_REPO/bin/hook.js\""
+      }
+    ]
+  }
+}

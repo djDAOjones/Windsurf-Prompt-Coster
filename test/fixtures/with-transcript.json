@@ -1,0 +1,10 @@
+{
+  "agent_action_name": "post_cascade_response_with_transcript",
+  "model_name": "Claude Sonnet 4",
+  "trajectory_id": "traj_demo_123",
+  "execution_id": "exec_demo_456",
+  "timestamp": "2026-05-31T12:00:00.000Z",
+  "tool_info": {
+    "transcript_path": "test/fixtures/transcript.jsonl"
+  }
+}

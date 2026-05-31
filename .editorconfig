@@ -1,0 +1,31 @@
+# EditorConfig — copy this file to your project root and customise.
+# See https://editorconfig.org for supported editors and properties.
+#
+# This provides mechanical style enforcement at save time, before any
+# linter or formatter runs. Editors that support EditorConfig apply
+# these rules automatically.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.js]
+indent_size = 2
+# quote_type is not part of the core EditorConfig spec.
+# Some editors (e.g. VS Code with extensions) support it; others ignore it.
+quote_type = single
+
+[*.json]
+indent_size = 2
+
+[*.{html,css}]
+indent_size = 2

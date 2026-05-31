@@ -1,0 +1,37 @@
+# .gitignore for Cascade Cost Meter
+
+# Dependencies
+node_modules/
+
+# Build output (customise to match your build output directory)
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment and secrets
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor state
+*.swp
+*.swo
+*~
+
+# Test coverage
+coverage/
+
+# Packaged extension artifact
+*.vsix
+
+# Local cost-meter data must never live in the repo (it belongs in
+# ~/.cascade-cost-meter/). Ignore it defensively in case it ever appears here.
+.cascade-cost-meter/
+usage.jsonl
+*.real.json
+*.real.jsonl

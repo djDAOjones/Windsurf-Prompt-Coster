@@ -1,0 +1,25 @@
+# .gitignore — copy this file to your project root and customise.
+# These are common defaults for JS/npm projects. Adjust as needed.
+
+# Dependencies
+node_modules/
+
+# Build output (customise to match your build output directory)
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment and secrets
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor state
+*.swp
+*.swo
+*~

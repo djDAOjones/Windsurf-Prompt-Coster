@@ -1,0 +1,43 @@
+{
+  "name": "cascade-cost-meter",
+  "displayName": "Cascade Cost Meter",
+  "description": "Local, privacy-first per-turn cost estimates for Windsurf Cascade.",
+  "version": "0.1.0",
+  "type": "module",
+  "publisher": "local",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other"],
+  "main": "./dist/extension.cjs",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "commands": [
+      {
+        "command": "cascadeCostMeter.openUsageLog",
+        "title": "Cascade Cost Meter: Open Usage Log"
+      },
+      {
+        "command": "cascadeCostMeter.showToday",
+        "title": "Cascade Cost Meter: Show Today's Breakdown"
+      }
+    ],
+    "configuration": {
+      "title": "Cascade Cost Meter",
+      "properties": {
+        "cascadeCostMeter.showToastPerTurn": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show an in-IDE notification with the estimate after each Cascade turn."
+        },
+        "cascadeCostMeter.statusBarScope": {
+          "type": "string",
+          "enum": ["today", "session"],
+          "default": "today",
+          "description": "Whether the status bar total covers today or just this editor session."
+        }
+      }
+    }
+  }
+}

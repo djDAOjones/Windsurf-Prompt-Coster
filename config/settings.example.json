@@ -1,0 +1,8 @@
+{
+  "_comment": "Copy to ~/.cascade-cost-meter/settings.json and edit. All keys optional; unknown keys are ignored. Privacy note: storeText defaults to false so no prompt/response text is ever persisted.",
+  "currency": "USD",
+  "exactTokenizer": false,
+  "storeText": false,
+  "textPreviewChars": 0,
+  "notifyThresholdUsd": 0
+}

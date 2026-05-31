@@ -1,0 +1,75 @@
+{
+  "version": "v1",
+  "pricingBasis": "provider_api_list_price_usd_per_1M_tokens",
+  "effectiveDate": "2026-05-31",
+  "currency": "USD",
+  "notes": "ESTIMATE ONLY. Rates are public provider API list prices (USD per 1,000,000 tokens) used as a per-turn proxy; they are NOT what Windsurf self-serve plans bill. Edit freely and add the exact model label shown in your Cascade model selector as an alias if a model reads 'cost unavailable'. In-house SWE-* models are intentionally omitted (no public token price) so they report 'cost unavailable'.",
+  "models": [
+    {
+      "model": "Claude Sonnet 4",
+      "aliases": ["claude-sonnet-4", "claude-3-7-sonnet", "claude-3-5-sonnet", "Claude 3.5 Sonnet", "claude-3-5-sonnet-20241022"],
+      "usdPer1MInput": 3,
+      "usdPer1MOutput": 15
+    },
+    {
+      "model": "Claude Opus 4",
+      "aliases": ["claude-opus-4", "Claude 3 Opus", "claude-3-opus"],
+      "usdPer1MInput": 15,
+      "usdPer1MOutput": 75
+    },
+    {
+      "model": "Claude Haiku 3.5",
+      "aliases": ["claude-3-5-haiku", "Claude 3.5 Haiku"],
+      "usdPer1MInput": 0.8,
+      "usdPer1MOutput": 4
+    },
+    {
+      "model": "GPT-4o",
+      "aliases": ["gpt-4o", "GPT 4o"],
+      "usdPer1MInput": 2.5,
+      "usdPer1MOutput": 10
+    },
+    {
+      "model": "GPT-4o mini",
+      "aliases": ["gpt-4o-mini", "GPT 4o mini"],
+      "usdPer1MInput": 0.15,
+      "usdPer1MOutput": 0.6
+    },
+    {
+      "model": "GPT-4.1",
+      "aliases": ["gpt-4.1", "GPT 4.1"],
+      "usdPer1MInput": 2,
+      "usdPer1MOutput": 8
+    },
+    {
+      "model": "GPT-4.1 mini",
+      "aliases": ["gpt-4.1-mini", "GPT 4.1 mini"],
+      "usdPer1MInput": 0.4,
+      "usdPer1MOutput": 1.6
+    },
+    {
+      "model": "o3",
+      "aliases": ["o3", "openai-o3"],
+      "usdPer1MInput": 2,
+      "usdPer1MOutput": 8
+    },
+    {
+      "model": "Gemini 2.5 Pro",
+      "aliases": ["gemini-2.5-pro", "Gemini 2.5 Pro"],
+      "usdPer1MInput": 1.25,
+      "usdPer1MOutput": 10
+    },
+    {
+      "model": "Gemini 2.0 Flash",
+      "aliases": ["gemini-2.0-flash", "Gemini 2.0 Flash"],
+      "usdPer1MInput": 0.1,
+      "usdPer1MOutput": 0.4
+    },
+    {
+      "model": "Gemini 1.5 Pro",
+      "aliases": ["gemini-1.5-pro"],
+      "usdPer1MInput": 1.25,
+      "usdPer1MOutput": 5
+    }
+  ]
+}

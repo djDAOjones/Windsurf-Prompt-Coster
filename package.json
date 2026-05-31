@@ -1,0 +1,29 @@
+{
+  "name": "cascade-cost-meter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local, privacy-first per-turn cost estimator for Windsurf Cascade.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "cascade-cost-meter": "bin/cascade-cost-meter.js",
+    "cascade-cost-meter-hook": "bin/hook.js"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build:ext": "node extension/esbuild.mjs",
+    "package:ext": "npm run build:ext && node scripts/build-vsix.mjs"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.24.0",
+    "vitest": "^2.1.8"
+  },
+  "optionalDependencies": {
+    "js-tiktoken": "^1.0.15"
+  }
+}
