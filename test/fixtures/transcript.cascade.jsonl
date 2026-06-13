@@ -1,0 +1,9 @@
+{"status":"done","type":"user_input","user_input":{"rules_applied":{"always_on":["agents-md"]},"user_response":"First question: how do I read a file in Node?"}}
+{"status":"done","type":"planner_response","planner_response":{"response":"You can read a file with fs.readFileSync in Node."}}
+{"status":"done","type":"view_file","view_file":{"path":"/repo/src/example.js"}}
+{"status":"done","type":"planner_response","planner_response":{"response":"Here is the relevant function from that file."}}
+{"status":"done","type":"user_input","user_input":{"rules_applied":{"always_on":["agents-md"]},"user_response":"Second question: now write a Vitest test for it please."}}
+{"status":"done","type":"view_file","view_file":{"path":"/repo/test/example.test.js"}}
+{"status":"running","type":"planner_response","planner_response":{"response":"Sure. I will add a Vitest test that covers the happy path."}}
+{"status":"done","type":"run_command","run_command":{"command":"npm test"}}
+{"status":"done","type":"planner_response","planner_response":{"response":"The test passes. Here is the final version of the file."}}

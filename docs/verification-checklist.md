@@ -11,7 +11,7 @@ machine.
 - [ ] Pricing seeded at `~/.cascade-cost-meter/pricing/pricing.v1.json` (or repo
       default resolved).
 - [ ] Hook wired in `~/.codeium/windsurf/hooks.json` for
-      `post_cascade_response_with_transcript` → `bin/cascade-cost-meter.js`.
+      `post_cascade_response_with_transcript` → `bin/hook.js` (run `npm run setup`).
 
 ## 1. Unit tests
 
@@ -27,12 +27,26 @@ machine.
 - [ ] The line contains model, IDs, timestamp, token estimates, cost,
       `pricingVersion` — and **no raw prompt/response text**.
 
-## 3. Live Cascade turn (macOS)
+## 3. Diagnose the pipeline with `doctor` (read-only)
 
-- [ ] Send a normal Cascade prompt; within ~5s an OS notification appears.
-- [ ] It shows: model name, input/output token estimate, estimated cost, and the
-      word "estimate".
-- [ ] A new matching JSONL line is appended.
+- [ ] `npm run doctor` runs without writing anything and prints a single VERDICT.
+- [ ] The foundational checks read `[PASS]`: Node runtime, Hook config (wired →
+      `bin/hook.js`, this repo), Data dir, Inbox bridge, Parser health, Pricing.
+- [ ] `Extension build` reads `matches local build` (rebuild + reinstall the
+      `.vsix` if it says the installed bundle differs).
+- [ ] If the verdict is `coverage`, recent AI activity used a non-Cascade surface
+      (e.g. the Codex/Editor-agent pane, which does not emit the hook). Switch to
+      the Cascade panel before expecting any cost.
+
+## 3b. Live Cascade turn (canary)
+
+- [ ] `npm run doctor -- --watch`, then send ONE short prompt in the Cascade
+      panel (NOT the Codex pane).
+- [ ] Within ~60s the WATCH VERDICT reads `healthy`: a new `usage.jsonl` line is
+      appended with parsed, nonzero tokens and an estimated cost.
+- [ ] The in-IDE status-bar total updates and a per-turn toast appears (extension
+      installed). A `coverage`/`hook firing`/`extension bridge` verdict instead
+      pinpoints exactly which link is broken.
 
 ## 4. Graceful degradation
 
@@ -42,7 +56,8 @@ machine.
       falls back to the response summary or logs locally; exits 0.
 - [ ] **Malformed transcript:** feed a corrupt JSONL line → no crash;
       "cost unavailable" or best-effort; exits 0.
-- [ ] **No notifier:** simulate missing `osascript` → no-op + local log; exits 0.
+- [ ] **Doctor is read-only:** `npm run doctor` leaves `usage.jsonl` and
+      `inbox.jsonl` byte-for-byte unchanged.
 
 ## 5. Never disrupt Cascade (critical invariant)
 

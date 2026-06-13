@@ -19,10 +19,12 @@ Cascade estimate: $0.018 · 2.4k in / 680 out · Claude Sonnet 4
 ## Status
 
 **MVP built and tested.** Shared core, fail-safe hook, headless CLI, and the
-Open VSX extension are implemented; **42/42 unit + integration tests pass** and
-the extension bundles via esbuild. A packaged **`extension/cascade-cost-meter.vsix`**
-is built and ready (`npm run package:ext`). Remaining on your machine: install the
-`.vsix`, wire the hook, and run the verification checklist (see `docs/setup.md`).
+Open VSX extension are implemented; **85/85 unit + integration tests pass** and
+the extension bundles via esbuild. Each turn is recorded exactly once (dedupe by
+`executionId`); `cascade-cost-meter dedup` cleans any legacy duplicates. A packaged
+**`extension/cascade-cost-meter.vsix`** is built and ready (`npm run package:ext`).
+Remaining on your machine: install the `.vsix`, wire the hook (`npm run setup`), and
+run the verification checklist (see `docs/setup.md`).
 
 ## How it works
 
@@ -56,6 +58,7 @@ See `docs/privacy-security.md` for the full posture.
 - **Design options + recommendation:** `docs/design-options.md`
 - **Privacy & security:** `docs/privacy-security.md`
 - **Limitations:** `docs/limitations.md`
+- **Pricing & model coverage:** `docs/pricing.md`
 - **Manual verification checklist:** `docs/verification-checklist.md`
 
 ## Project layout
@@ -65,11 +68,12 @@ AGENTS.md, UI-STANDARDS.md, DEV-INFRASTRUCTURE.md   — agent + project contract
 README.md                                           — this file
 docs/                                               — planning deliverables
 pm_skills/                                           — project memory + workflows
-pm-skills/                                           — framework clone (upgrade reference; do not edit)
 ```
 
 ## Setup
 
-A full setup guide ships with the prototype (after sign-off). It will cover
-installing the hook into `~/.codeium/windsurf/hooks.json`, seeding the pricing
-config, and verifying the notification loop.
+See `docs/setup.md` for the full guide (prerequisites, install, build the
+extension, verify). The fiddly hook-wiring step is automated: run `npm run setup`
+to safely merge the hook into `~/.codeium/windsurf/hooks.json` — it auto-detects
+the repo path, backs up your existing config, and is safe to re-run. Details in
+`docs/install.md`.

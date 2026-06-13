@@ -3,7 +3,7 @@
   "pricingBasis": "provider_api_list_price_usd_per_1M_tokens",
   "effectiveDate": "2026-05-31",
   "currency": "USD",
-  "notes": "ESTIMATE ONLY. Rates are public provider API list prices (USD per 1,000,000 tokens) used as a per-turn proxy; they are NOT what Windsurf self-serve plans bill. Edit freely and add the exact model label shown in your Cascade model selector as an alias if a model reads 'cost unavailable'. In-house SWE-* models are intentionally omitted (no public token price) so they report 'cost unavailable'.",
+  "notes": "ESTIMATE ONLY. Rates are public provider API list prices (USD per 1,000,000 tokens) used as a per-turn proxy; they are NOT what Windsurf self-serve/credit plans bill. If a turn reads 'cost unavailable', run `cascade-cost-meter models` to see the exact label from your Cascade selector, then add it here as a new model or an alias. In-house SWE-* models are intentionally omitted (no public token price) so they report 'cost unavailable'. See docs/pricing.md.",
   "models": [
     {
       "model": "Claude Sonnet 4",
@@ -22,6 +22,24 @@
       "aliases": ["claude-3-5-haiku", "Claude 3.5 Haiku"],
       "usdPer1MInput": 0.8,
       "usdPer1MOutput": 4
+    },
+    {
+      "model": "Claude Opus 4.8",
+      "aliases": ["Claude Opus 4.8 Max", "Claude Opus 4.8 (Thinking)", "claude-opus-4.8", "claude-opus-4-8"],
+      "usdPer1MInput": 5,
+      "usdPer1MOutput": 25
+    },
+    {
+      "model": "Claude Sonnet 4.5",
+      "aliases": ["Claude Sonnet 4.5 (Thinking)", "claude-sonnet-4.5", "claude-sonnet-4-5"],
+      "usdPer1MInput": 3,
+      "usdPer1MOutput": 15
+    },
+    {
+      "model": "Claude Haiku 4.5",
+      "aliases": ["claude-haiku-4.5", "claude-haiku-4-5"],
+      "usdPer1MInput": 1,
+      "usdPer1MOutput": 5
     },
     {
       "model": "GPT-4o",
@@ -50,8 +68,20 @@
     {
       "model": "o3",
       "aliases": ["o3", "openai-o3"],
-      "usdPer1MInput": 2,
-      "usdPer1MOutput": 8
+      "usdPer1MInput": 0.4,
+      "usdPer1MOutput": 1.6
+    },
+    {
+      "model": "GPT-5.4",
+      "aliases": ["gpt-5.4", "GPT 5.4"],
+      "usdPer1MInput": 2.5,
+      "usdPer1MOutput": 15
+    },
+    {
+      "model": "GPT-5.4 mini",
+      "aliases": ["gpt-5.4-mini", "GPT 5.4 mini"],
+      "usdPer1MInput": 0.75,
+      "usdPer1MOutput": 4.5
     },
     {
       "model": "Gemini 2.5 Pro",

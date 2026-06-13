@@ -61,6 +61,8 @@ Common fields on every hook event:
   per-turn dollar cost. Hence "estimate" labelling is mandatory, not cosmetic.
 - **Deferred:** in-IDE UI (extension via the file-watch bridge); Teams/Enterprise
   daily reconciliation via the Analytics API.
-- **Must probe on a real machine before coding the parser:** the exact JSONL
-  line schema of `…_with_transcript` (Q5/Q13) — build a resilient parser and
-  validate against a real sample.
+- **Transcript schema (confirmed 2026-05-31 on a real machine):** the
+  `…_with_transcript` JSONL is an action stream of `{ status, type, <action>: {…} }`
+  lines — user text at `user_input.user_response`, assistant text at
+  `planner_response.response`, plus tool actions (`view_file`, `run_command`, …).
+  The parser reads this shape (latest turn) and keeps a generic fallback for drift.

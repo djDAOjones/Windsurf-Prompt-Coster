@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeHookEvent } from '../src/core/event.js';
+import { normalizeHookEvent, dedupKey } from '../src/core/event.js';
 
 describe('normalizeHookEvent', () => {
   const now = () => '2026-05-31T00:00:00.000Z';
@@ -38,5 +38,22 @@ describe('normalizeHookEvent', () => {
   it('handles missing/garbage input without throwing', () => {
     expect(() => normalizeHookEvent(null, now)).not.toThrow();
     expect(normalizeHookEvent(null, now).modelName).toBeNull();
+  });
+});
+
+describe('dedupKey', () => {
+  it('prefers executionId when present', () => {
+    expect(dedupKey({ executionId: 'x', trajectoryId: 't', timestamp: 'ts' })).toBe('e:x');
+  });
+
+  it('falls back to trajectoryId + timestamp', () => {
+    expect(dedupKey({ trajectoryId: 't', timestamp: 'ts' })).toBe('t:t:ts');
+  });
+
+  it('returns null when nothing identifies the turn', () => {
+    expect(dedupKey({})).toBeNull();
+    expect(dedupKey(null)).toBeNull();
+    expect(dedupKey({ trajectoryId: 't' })).toBeNull();
+    expect(dedupKey({ timestamp: 'ts' })).toBeNull();
   });
 });

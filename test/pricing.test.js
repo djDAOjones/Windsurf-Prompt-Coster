@@ -56,4 +56,12 @@ describe('the bundled pricing config', () => {
     expect(registry.version).toBe('v1');
     expect(lookupModel(registry, 'Claude Sonnet 4')).not.toBeNull();
   });
+
+  it('prices the current Claude Opus 4.8 Max label at Opus 4.8 rates', () => {
+    const { registry } = loadPricing(bundledPricingFile());
+    const entry = lookupModel(registry, 'Claude Opus 4.8 Max');
+    expect(entry).not.toBeNull();
+    expect(entry.usdPer1MInput).toBe(5);
+    expect(entry.usdPer1MOutput).toBe(25);
+  });
 });

@@ -32,8 +32,10 @@ number it shows. Every figure is labelled "estimate" for the reasons below.
 
 - **Timing.** The post-response hooks are asynchronous, so the notification
   appears shortly *after* the turn completes.
-- **Transcript schema drift.** The docs warn the per-step structure "may change";
-  the parser is defensive and degrades to "cost unavailable" rather than crash.
+- **Transcript schema drift.** The live schema (confirmed 2026-05-31) is an action
+  stream (`user_input.user_response`, `planner_response.response`, tool actions); the
+  docs warn it "may change", so the parser reads this shape but keeps a generic
+  fallback and degrades to "cost unavailable" rather than crash.
 - **Transcript retention.** `~/.windsurf/transcripts/` is capped at 100 files
   (oldest pruned). The hook reads promptly, but extreme backlogs could prune a
   transcript before it is read.
@@ -41,6 +43,8 @@ number it shows. Every figure is labelled "estimate" for the reasons below.
   cancelled/errored turns may not produce a record.
 - **Model label dependence.** Pricing maps on `model_name`; if Windsurf renames a
   model label, the config needs a matching alias or it shows "cost unavailable".
+  Run `cascade-cost-meter models` to see which labels you use and which need a
+  price (see `docs/pricing.md`).
 
 ## Scope caveats (MVP)
 

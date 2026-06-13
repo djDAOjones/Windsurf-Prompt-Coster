@@ -9,11 +9,26 @@ macro structure but want AI agents to handle implementation
 without losing context, drifting, or wasting tokens.
 
 Defaults to Carbon Design System, WCAG 2.2 AAA, Nielsen heuristics,
-and JSDoc. All customisable, none apologised for.
+JSDoc, and a lean invariant-led testing doctrine. All customisable,
+none apologised for.
 
 ## Start here
 
 **New project?** Follow [init.md](./init.md) step by step.
+
+**New project, and you want the agent to build it?** Run
+[`integrations/init-mvp.md`](./integrations/init-mvp.md). It is the
+guided-then-autonomous path: you sign off the foundation (the product
+read, the stack, and the MVP backlog), then it builds the first-milestone
+MVP to completion without further gates — de-risked by staged rollback
+checkpoints. Same rigour as the gated path.
+
+**New project, and you want it built *and shipped*?** Run
+[`integrations/spec-to-prod.md`](./integrations/spec-to-prod.md). It
+wraps `init-mvp.md` and carries on — within a scope band you sign off
+(deployed MVP, deployed current milestone, or the full backlog) — to a
+production deploy via [`prompts/deploy.md`](./prompts/deploy.md). Two
+gates only: the foundation, and how far to go.
 
 **Already using an older version of pm-skills?** Run
 [`integrations/upgrade.md`](./integrations/upgrade.md), or paste
@@ -25,13 +40,13 @@ templates, and never silently overwrites a customised framework file.
 
 ## Memory layers and read tiers
 
-The framework uses **two memory layers** and **three read tiers**.
+The framework uses **two memory layers** and **four read tiers**.
 
 **Two memory layers:**
 
 - **`project/`** — living project memory. Updated every session.
-  Contains the brief, backlog, wish-list, file map, conventions, and
-  decision log.
+  Contains the brief, backlog, trajectory, wish-list, file map,
+  conventions, and decision log.
 - **`AGENTS.md` + `UI-STANDARDS.md` + `DEV-INFRASTRUCTURE.md`** (in
   the project root) — permanent behavioral contracts. Contain hard
   rules, invariants, accessibility standards, design system
@@ -39,12 +54,17 @@ The framework uses **two memory layers** and **three read tiers**.
   kickoff process (Steps 6–8 of `init.md`) and updated when major
   architectural, UI, or build decisions change.
 
-**Three read tiers** (canonical policy in `AGENTS.md` → "Before
+**Four read tiers** (canonical policy in `AGENTS.md` → "Before
 every task"):
 
-- **Hot whole-file** — read every task.
+- **Hot whole-file** — read every task: reference docs (soft size
+  guideline, not prune targets), the accreting `file-map.md` (hard
+  prunable budget), and conditional `UI-STANDARDS.md` /
+  `DEV-INFRASTRUCTURE.md` (read only when the task touches that domain).
 - **Hot sectional** — read by section only (`backlog.md` Active;
   `decision-log.md` latest 10).
+- **Warm** — `pm_skills/project/trajectory.md` (shipped-work
+  narrative) is read on demand, not every task.
 - **Cold** — `pm_skills/project/wish-list.md` (capture inbox) and
   `pm_skills/project/archive/*` are never auto-read.
 
@@ -63,10 +83,11 @@ project/         Durable project memory. Fill once, maintain ongoing.
   brief.md         What we're building.
   architecture.md  Tech stack, structure, key decisions.
   conventions.md   Style, naming, patterns, rules.
-  backlog.md       Living task list with status.
+  backlog.md       Open work only (Current, Next, Icebox).
+  trajectory.md    Shipped-work narrative, in milestones (warm tier).
   wish-list.md     Capture inbox for unscoped ideas (cold; triaged later).
   file-map.md      Key files and their roles.
-  decision-log.md  Append-only record of design decisions.
+  decision-log.md  Append-only record of design decisions (the why).
 
 prompts/         Reusable per-task prompts.
   session-start.md        How to begin a new chat.
@@ -79,16 +100,22 @@ prompts/         Reusable per-task prompts.
   bug-scoping.md          Bug-specific scoping: reproduce, diagnose, fix.
   end-of-task.md          Canonical end-of-task housekeeping.
   corrections.md          Drift correction snippets.
+  roadmap-refactor.md     Repair a drifted backlog: regroup, dedupe, evict done-work.
   prune-memory.md         Memory-pruning procedure (canonical).
+  doctor-memory.md        Read-only memory health check (drift, paths, versions).
   upgrade.md              Framework upgrade procedure (canonical).
   release.md              Maintainer release checklist (source repo only).
+  deploy.md               Production deploy + live verification (consuming project).
 
 integrations/    Optional tool-specific workflows.
   init-project.md    Guided project initialization.
+  init-mvp.md        Sign off the foundation, then autonomous MVP build.
+  spec-to-prod.md    Spec to deployed product, in signed-off scope bands.
   feature.md         Full task workflow with approval gates.
   bugfix.md          Diagnosis-before-fix workflow for bugs.
   auto-jazz.md       Full 4-stage workflow, no approval gates.
   auto-jazz-lite.md  Fast 2-stage workflow, no approval gates.
+  prune-memory.md    Prune project memory when files exceed budgets.
   upgrade.md         Upgrade an existing project to the latest version.
 
 scaffold/        Template files to copy into your project root.
@@ -159,6 +186,12 @@ go-ahead. Confirm, then continue with the matching workflow below.
 4. Verify the fix.
 5. End of task → paste `prompts/end-of-task.md`.
 
+**Shipping to production:**
+
+When work is merged and green, paste `prompts/deploy.md`. It reads
+`DEV-INFRASTRUCTURE.md` → Deployment, runs the pre-flight checks,
+executes the documented pipeline, and verifies the live result.
+
 ## Keeping project memory fresh
 
 | File | When to update |
@@ -166,7 +199,8 @@ go-ahead. Confirm, then continue with the matching workflow below.
 | `brief.md` | Rarely. Only if the project's direction fundamentally changes. |
 | `architecture.md` | When adding major modules or changing the tech stack. |
 | `conventions.md` | When a new convention is established or changed. |
-| `backlog.md` | End of every task — mark done, add follow-ups. |
+| `backlog.md` | End of every task — remove shipped items, add follow-ups (open work only). |
+| `trajectory.md` | End of every task that ships — one line per shipped item, grouped by phase. |
 | `wish-list.md` | When an out-of-scope idea surfaces — append one line. Drained by triage at `next-batch.md`. |
 | `file-map.md` | When files are created, renamed, or deleted. |
 | `decision-log.md` | During the design phase of each task. |

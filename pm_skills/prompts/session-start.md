@@ -23,9 +23,13 @@ list below is a quick reference — `AGENTS.md` is authoritative.
 
 **Hot sectional** (read by section, not whole):
 
-- `pm_skills/project/backlog.md` — Active section only.
+- `pm_skills/project/backlog.md` — Active section only (open work).
 - `pm_skills/project/decision-log.md` — latest 10 entries only.
   Search older entries on demand if the task requires prior-decision context.
+
+**Warm** (read on demand, not every task):
+
+- `pm_skills/project/trajectory.md` — shipped-work narrative; read during roadmap-refactor, release, or when reconstructing what shipped.
 
 **Cold** (do not auto-load):
 

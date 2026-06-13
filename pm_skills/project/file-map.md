@@ -26,6 +26,7 @@
 - `docs/limitations.md` — known limitations and accuracy caveats.
 - `docs/verification-checklist.md` — manual verification steps.
 - `docs/setup.md` — install / build / wire-up / verification guide.
+- `docs/install.md` — automated hook installer guide (`npm run setup`).
 
 ## Contracts (root)
 
@@ -37,7 +38,8 @@
 ## Entry point (`bin/`)
 
 - `bin/hook.js` — fail-safe hook entry; normalises the event and appends it to `inbox.jsonl`; always exits 0.
-- `bin/cascade-cost-meter.js` — headless CLI; runs the full pipeline on one event, appends a record, prints the summary.
+- `bin/cascade-cost-meter.js` — headless CLI; runs the full pipeline on one event, appends a record, prints the summary; subcommands `models`, `dedup`, `doctor [--watch] [--json]`.
+- `bin/install.js` — setup helper (`npm run setup`); safely merges our hook into `~/.codeium/windsurf/hooks.json` (backup, idempotent, atomic); `--dry-run`/`--print`.
 
 ## Core modules (`src/`)
 
@@ -49,9 +51,13 @@
 - `src/core/usageRecord.js` — build the UsageRecord (counts, not content).
 - `src/core/display.js` — per-turn summary + status-bar label.
 - `src/core/pipeline.js` — orchestrates parse → estimate → price → cost → record.
+- `src/core/doctor.js` — pure diagnostics: probe snapshot → per-layer checks + one verdict + text formatter.
+- `src/diag/probe.js` — read-only diagnostic probes (hook config, data dir/offset, inbox/usage recency, transcripts, parser/pricing health, installed-vs-built extension hash).
+- `src/diag/canary.js` — live `doctor --watch` canary: read-only snapshot + pure change classifier + poll loop.
 - `src/log/usageLog.js` — append/read `usage.jsonl`; summarise totals.
 - `src/log/inbox.js` — durable `inbox.jsonl` queue + processed offset.
-- `src/config/paths.js` — resolve `~/.cascade-cost-meter/` dirs and files.
+- `src/config/paths.js` — resolve `~/.cascade-cost-meter/` dirs/files + the Windsurf `hooks.json` path.
+- `src/config/hooksConfig.js` — pure, testable merge of our hook entry into a Windsurf `hooks.json` (idempotent; refuses malformed).
 - `src/config/settings.js` — load/sanitise settings (defaults + file).
 - `src/config/pricingSource.js` — pick the user vs bundled pricing file.
 - `src/util/safe.js` — fail-safe wrappers + best-effort internal logging.
@@ -76,12 +82,13 @@
 ## Tests
 
 - `test/fixtures/` — sanitized payloads + a fake transcript.
-- `test/{parser,estimator,pricing,cost,event,pipeline,storage,integration}.test.js` — 42 passing tests.
+- `test/{parser,estimator,pricing,cost,event,pipeline,storage,integration,hooksConfig,models,doctor,diag}.test.js` — 138 passing tests.
 
 ## Build and tooling
 
-- `package.json` — scripts (`test`, `build:ext`, `package:ext`) and dev deps.
+- `package.json` — scripts (`test`, `setup`, `doctor`, `build:ext`, `package:ext`) and dev deps.
 - `scripts/build-vsix.mjs` — zero-dep `.vsix` packager (zips the OPC layout;
   replaces `vsce`, which hangs on the OneDrive path).
 - `vitest.config.js` — Vitest configuration.
+- `.windsurf/workflows/setup.md` — `/setup` workflow Cascade can run to wire the hook and verify.
 - `.editorconfig`, `.gitignore`, `.markdownlint.json` — editor/lint config.

@@ -19,7 +19,7 @@ import path from 'node:path';
 import { processEvent } from '../../src/core/pipeline.js';
 import { buildRegistry, loadPricing } from '../../src/core/pricing.js';
 import { readNewEvents, commitOffset } from '../../src/log/inbox.js';
-import { appendUsage, readUsage, summarize } from '../../src/log/usageLog.js';
+import { appendUsageOnce, readUsage, summarize } from '../../src/log/usageLog.js';
 import { resolvePaths, ensureDataDir } from '../../src/config/paths.js';
 import { loadSettings } from '../../src/config/settings.js';
 import { formatStatusBar } from '../../src/core/display.js';
@@ -122,7 +122,9 @@ async function processNewEvents() {
     for (const event of events) {
       try {
         const { record, summary } = await processEvent(event, { registry, settings });
-        appendUsage(record);
+        // One record per turn across hosts: only the consumer that wins the
+        // claim writes the record and toasts; duplicates are skipped silently.
+        if (!appendUsageOnce(record)) continue;
         if (typeof record.estimatedCostUsd === 'number') sessionUsd += record.estimatedCostUsd;
         const threshold = settings.notifyThresholdUsd || 0;
         const cost = record.estimatedCostUsd || 0;

@@ -44,6 +44,19 @@ describe('processEvent', () => {
     expect(summary).toMatch(/Cascade estimate: \$/);
   });
 
+  it('parses the real Cascade action-stream schema into non-zero tokens', async () => {
+    const cascade = [
+      JSON.stringify({ status: 'done', type: 'user_input', user_input: { user_response: 'Write hello world in Python.' } }),
+      JSON.stringify({ status: 'done', type: 'planner_response', planner_response: { response: 'Sure, here is a hello world program in Python that prints to stdout.' } }),
+    ].join('\n');
+    const { record } = await processEvent(baseEvent, { registry, settings, readTranscript: () => cascade });
+    expect(record.transcriptStatus).toBe('parsed');
+    expect(record.inputTokens).toBeGreaterThan(0);
+    expect(record.outputTokens).toBeGreaterThan(0);
+    expect(record.costStatus).toBe('estimated');
+    expect(record.estimatedCostUsd).toBeGreaterThan(0);
+  });
+
   it('reports cost_unavailable for an unknown model', async () => {
     const ev = normalizeHookEvent({
       model_name: 'SWE-1.5',

@@ -18,5 +18,7 @@
 
 ## Open
 
-<!-- Append captured ideas below, one bullet each. Delete this comment once
-     you add the first real item. -->
+- In-IDE "setup panel" webview on the extension that calls the same `bin/install.js` merge engine (visual face for the headless installer) — (from: 2026-05-31 setup-wizard task)
+- `npm run setup --uninstall` to remove our hook entry and/or restore a `.bak-*` backup — (from: 2026-05-31 setup-wizard task)
+- Optional auto-seed of pricing/settings as a `npm run setup` step — (from: 2026-05-31 setup-wizard task)
+- Per-trajectory transcript delta tracking (persist a read position per conversation) for tighter per-turn token accounting — (from: 2026-05-31 parser fix, Option C)

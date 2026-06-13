@@ -13,6 +13,13 @@
  * Heuristic for a turn: the LAST assistant/model message is the output; every
  * message before it (system, user, prior assistant, tool output) approximates the
  * input context resent for that turn.
+ *
+ * Cascade's REAL transcript (confirmed 2026-05-31 on a real machine) is an action
+ * stream of `{ status, type, <action>: {…} }` lines, with user text at
+ * `user_input.user_response` and assistant text at `planner_response.response`,
+ * plus tool actions (`view_file`, `run_command`, …). When that shape is detected
+ * we use a schema-aware, latest-turn reading (see parseCascadeStream); any other
+ * shape falls back to the generic heuristic.
  */
 
 const DEFAULT_ROLE_FIELDS = ['role', 'type', 'speaker', 'sender', 'author', 'kind'];
@@ -55,6 +62,14 @@ export function parseTranscript(text, opts = {}) {
 
   const objects = parseObjects(text);
   if (objects.length === 0) return empty;
+
+  // Cascade's real transcript is an action stream, not a flat role/content log.
+  // Detect it and use the schema-aware, latest-turn reading; otherwise fall back
+  // to the generic heuristic below.
+  if (isCascadeStream(objects)) {
+    const turn = parseCascadeStream(objects);
+    return turn.ok ? turn : { ...empty, model: turn.model };
+  }
 
   let model = null;
   const messages = [];
@@ -171,4 +186,112 @@ function findModel(obj, modelFields) {
     if (typeof obj[f] === 'string' && obj[f].trim()) return obj[f];
   }
   return null;
+}
+
+/**
+ * Detect Cascade's action-stream transcript: lines shaped like
+ * `{ status, type, <action>: {…} }`, carrying user text at
+ * `user_input.user_response` and assistant text at `planner_response.response`.
+ * We key off those two content containers because they uniquely identify the
+ * schema — a flat role/content log has neither — so generic transcripts still
+ * take the heuristic path.
+ * @param {object[]} objects
+ * @returns {boolean}
+ */
+function isCascadeStream(objects) {
+  for (const o of objects) {
+    if (o && typeof o === 'object' && ('user_input' in o || 'planner_response' in o)) return true;
+  }
+  return false;
+}
+
+/**
+ * Parse a Cascade action stream into a single normalised turn.
+ *
+ * The transcript is the WHOLE conversation so far, so we isolate the latest turn
+ * (from the last `user_input` line to the end). Per the approved design
+ * (Option B, "full context"): the latest turn's `planner_response.response`
+ * chunks are the OUTPUT, while everything else — earlier turns, this turn's user
+ * message, and tool/file output — is the resent INPUT context. This avoids
+ * re-counting prior assistant text as new output, and reflects that longer
+ * conversations cost more because more context is re-sent each turn. Input is
+ * still an estimate and undercounts hidden system/rules context (see
+ * docs/limitations.md).
+ * @param {object[]} objects
+ * @returns {ParsedTurn}
+ */
+function parseCascadeStream(objects) {
+  let lastUserIdx = -1;
+  for (let i = objects.length - 1; i >= 0; i--) {
+    const o = objects[i];
+    if (o && typeof o === 'object' && o.user_input != null) { lastUserIdx = i; break; }
+  }
+  const turnStart = lastUserIdx === -1 ? 0 : lastUserIdx;
+
+  let model = null;
+  const inputParts = [];
+  const outputParts = [];
+
+  for (let i = 0; i < objects.length; i++) {
+    const line = objects[i];
+    if (!line || typeof line !== 'object') continue;
+    if (model == null) model = findModel(line, DEFAULT_MODEL_FIELDS);
+
+    const planner = line.planner_response;
+    if (i >= turnStart && planner && typeof planner === 'object') {
+      // Latest-turn assistant text → output (not also counted as input).
+      const resp = typeof planner.response === 'string' ? planner.response : collectStrings(planner);
+      if (resp && resp.trim()) outputParts.push(resp);
+      continue;
+    }
+
+    // Everything else is resent input context: prior turns, the user's message,
+    // and tool/file output. Skip the per-line metadata fields.
+    const parts = [];
+    for (const key of Object.keys(line)) {
+      if (key === 'status' || key === 'type') continue;
+      gatherStrings(line[key], 0, parts);
+    }
+    const text = parts.join('\n');
+    if (text && text.trim()) inputParts.push(text);
+  }
+
+  const inputText = inputParts.join('\n');
+  const outputText = outputParts.join('\n');
+  return {
+    model,
+    inputText,
+    outputText,
+    inputChars: inputText.length,
+    outputChars: outputText.length,
+    messageCount: objects.length,
+    ok: !!(inputText || outputText),
+  };
+}
+
+/**
+ * Recursively collect every string value under a node into `acc` (bounded depth).
+ * Approximates the full text the model received for a transcript line, including
+ * nested tool/file payloads.
+ * @param {unknown} node
+ * @param {number} depth
+ * @param {string[]} acc
+ */
+function gatherStrings(node, depth, acc) {
+  if (depth > 6 || node == null) return;
+  if (typeof node === 'string') { if (node) acc.push(node); return; }
+  if (Array.isArray(node)) { for (const n of node) gatherStrings(n, depth + 1, acc); return; }
+  if (typeof node === 'object') { for (const k of Object.keys(node)) gatherStrings(node[k], depth + 1, acc); return; }
+}
+
+/**
+ * Collect all strings under a node and join them — a fallback for a
+ * `planner_response` that has no plain string `response`.
+ * @param {unknown} node
+ * @returns {string}
+ */
+function collectStrings(node) {
+  const acc = [];
+  gatherStrings(node, 0, acc);
+  return acc.join('\n');
 }

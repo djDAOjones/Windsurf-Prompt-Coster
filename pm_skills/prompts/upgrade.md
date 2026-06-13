@@ -118,6 +118,13 @@ The work list was already approved — do not pause between individual
 overwrites. Batch them. `pm_skills/VERSION` is itself a framework
 file: overwriting it stamps the project at the new version.
 
+**VERSION exception when a migration is pending.** If the work list
+includes a major-version memory migration (Step 8), **exclude
+`pm_skills/VERSION` from this batch** and hold it at the old number
+through the framework sync. Stamp it to the new version **only after the
+Step 8 reconcile passes**, so a half-finished migration never leaves a
+project falsely claiming the new version.
+
 ## 7. Merge root templates
 
 Only if the work list touches `AGENTS.md`, `UI-STANDARDS.md`, or
@@ -149,7 +156,49 @@ templates. For each affected file:
   not auto-rename.
 - Removed sections upstream → do nothing. Never delete user content.
 
-Show the proposed migration before applying.
+**Major-version memory migrations.** When a changelog entry calls for
+*relocating* project-memory content — not just adding a file or section,
+but moving content (e.g. shipped work out of `backlog.md` into a new
+`trajectory.md`) — treat it as a one-time, approved, lossless data
+migration. The changelog entry names the *specific* moves; the mechanics
+below make them safe and are the same every time:
+
+1. **Snapshot first.** Copy each file being restructured, verbatim, to
+   `archive/<dir>/<file>-pre-vNEW-YYYY-MM-DD.md`, and `diff -q` the copy
+   against the original to confirm it is byte-identical. This snapshot is
+   the safety net — no later step can lose anything it holds.
+2. **Propose the whole move.** Show a from → to table (what content
+   leaves which file and where each piece lands) alongside the changelog
+   entry's specific steps. (Optional pre-flight: a read-only
+   `doctor-memory.md` pass here surfaces status drift — stale `[ ]`,
+   duplicates — before anything moves; `roadmap-refactor.md`'s findings
+   pass also catches these, so skip it if you prefer.) STOP for sign-off.
+3. **Execute.** First scan `archive/` for any pre-existing shipped /
+   trajectory archives (e.g. a `backlog-shipped.md` left by an earlier
+   prune) and align with them — reference them from `INDEX.md`, never
+   duplicate their content into a new chunk. Then relocate each item as
+   one compressed line that **starts with its ID**, confirming its detail
+   already lives in its canonical home (e.g. the *why* in
+   `decision-log.md`). When a destination spans multiple epochs, split it
+   into sequential `-NNNN-` chunks on the epoch boundary (browsability,
+   not size). Create or refresh `archive/INDEX.md`.
+4. **Reconcile (the lossless proof).** Build the ID set from the snapshot
+   by taking the **leading item ID of each shipped line** (the first
+   token of every `- [x] **ID** …` line), and the ID set of the new homes
+   by taking the **leading token of each `- ID — …` line** in the
+   trajectory union. Anchor to line starts — never grep IDs from anywhere
+   in the line, or bolded prose (`**Client-only**`) and IDs mentioned
+   inside other items create false positives that bury a real omission.
+   The set difference must be **empty** — a clean pass/fail, not a list to
+   triage. Then confirm zero stragglers in the source (e.g. zero `[x]`
+   left in `backlog.md`) and that the snapshot is still byte-identical.
+   Report before/after word and item counts.
+
+Never delete content not yet confirmed in its new home. This is the one
+exception to "never overwrite project memory": it restructures with
+approval, losslessly. Once the reconcile passes, stamp `pm_skills/VERSION`
+to the new version (the Step 6 exception), then record the reconciliation
+result in Steps 10–11.
 
 ## 9. Readiness check
 

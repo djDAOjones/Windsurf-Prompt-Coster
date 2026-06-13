@@ -6,6 +6,9 @@ Guide the user through project initialization. Follow these steps in
 order, writing files as you go. Present results for review at each
 step before proceeding to the next.
 
+To gate only the foundation and then autonomously build the first-milestone
+MVP, use `pm_skills/integrations/init-mvp.md` instead.
+
 1. Fill in the project brief.
    Ask the user the questions from
    `pm_skills/project/brief.md` (what are we
@@ -24,9 +27,12 @@ step before proceeding to the next.
 
 3. Generate the initial backlog.
    Read the brief and architecture.
-   Propose 8–12 tasks grouped by milestone, ordered by dependency,
-   small enough for a single session. Follow the template in
-   `pm_skills/project/backlog.md`.
+   Propose 8–12 OPEN tasks grouped by milestone (Current / Next, plus
+   an Icebox for deferred), ordered by dependency, small enough for a
+   single session. Open work only — no Completed section. Use the
+   ticket grammar in `pm_skills/project/backlog.md` (one line for quick
+   items; an Intent / Done-when pair plus any [sign-off] / [blocked]
+   flags for non-trivial ones) so intent survives later compression.
    Present for review. After approval, write to
    `pm_skills/project/backlog.md`.
 
@@ -98,9 +104,10 @@ step before proceeding to the next.
     "not applicable" stub. Bracketed `[placeholder]` strings should
     not remain in populated sections.
 
-    Note: `pm_skills/project/wish-list.md` ships empty (just its
-    template header) — it needs no population at init. Don't flag it
-    as missing or incomplete.
+    Note: `pm_skills/project/wish-list.md` and
+    `pm_skills/project/trajectory.md` ship empty (just their template
+    headers) — they need no population at init. Don't flag them as
+    missing or incomplete.
 
     Note: `pm_skills/project/archive/` should NOT exist yet — it is
     created lazily on the first run of

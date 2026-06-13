@@ -13,13 +13,20 @@ stop and report.
 
 ## 1. Detect
 
-Word-count every hot whole-file read listed in `AGENTS.md` →
-"Read tiers" — `README.md`, the `pm_skills/project/` whole-file
-reads, `UI-STANDARDS.md`, `DEV-INFRASTRUCTURE.md`, and any
-project-added hot reads — and sum them for the total-hot-set
-budget. Count Completed items in `backlog.md`. Count entries and
-the oldest entry date in `decision-log.md`. Count open items in
-`wish-list.md`.
+Word-count each hot whole-file read listed in `AGENTS.md` →
+"Read tiers": the reference docs (`README.md`, `brief.md`,
+`architecture.md`, `conventions.md`, + any project-added standards /
+process / infra docs) against their soft per-doc guideline, and
+`file-map.md` against its hard accreting budget. Do **not** sum them
+into a single hot-set cap — there is no aggregate word budget (see
+AGENTS.md). Count the backlog **Active** words and open items, and any
+shipped `[x]` items still in `backlog.md` — anchor the count to list
+items (`grep -cE '^\s*[-*] \[x\]'`) so the status-legend line is not a
+false positive. Word-count `trajectory.md`. Count both entries and
+words in `decision-log.md`, plus the oldest entry date. Count open
+items in `wish-list.md`. For `archive/` files, note only whether a chunk spans more than one
+epoch (multiple months, or across a migration boundary) — size is not a
+trigger; cold archives are never auto-read (grep + line-range only).
 
 Output a short table:
 
@@ -31,37 +38,65 @@ This is the **before** snapshot.
 
 For each over-budget file, propose one specific action:
 
-- `file-map.md` over budget → strip historical and batch notes,
-  keep current roles only. Move stripped content to
-  `pm_skills/project/archive/file-map-YYYY-MM-DD-historical.md`.
+- `file-map.md` over budget → strip historical and batch notes (task
+  tags, dates, test counts), keep current roles only. Move stripped
+  content to
+  `pm_skills/project/archive/file-map-YYYY-MM-DD-historical.md`. The
+  floor is the irreducible current-role list; on a large codebase that
+  may still exceed 2,000 words — strip noise, not signal, and stop there
+  rather than gutting real roles to hit the number.
 - `architecture.md` or `conventions.md` over budget → propose
   tightening or splitting; usually content belongs in
   `decision-log.md` or in a new permanent contract file.
 - `brief.md` over budget → propose tightening (rare).
-- `backlog.md` Completed > budget → move all but the most recent 30
-  items to `archive/backlog-shipped.md`. Keep Active untouched.
-- `decision-log.md` > entry budget OR oldest > age budget → archive
-  the oldest entries, keeping the latest live (at least the
-  read-tier latest 10, ideally a generous margin above it). Default
-  split is by whole month into `archive/decision-log-YYYY-MM.md`.
-  If a single month alone exceeds the entry budget, split that
-  month by date-range instead, into
-  `archive/decision-log-YYYY-MM-DD-to-YYYY-MM-DD.md`, oldest
-  entries first. Leave a one-line index at the bottom of the live
-  file pointing at each archive file. If only the age budget is
-  tripped (not the entry budget) and fewer than ~5 entries lie
-  beyond the latest-10 floor, note the overrun and skip — the
-  archive gain doesn't justify the prune (common on low-velocity /
-  sporadic projects).
+- `[x]` items in `backlog.md` (shipped work that never left) → for
+  each, compress to a one-line outcome under the current phase of
+  `trajectory.md` and confirm the WHY is in `decision-log.md`, then
+  remove it from the backlog. A legacy `## Completed` section migrates
+  the same way, then the heading is removed.
+- `backlog.md` Active over budget → this is structural, not just size.
+  Recommend `roadmap-refactor.md` (regroup by lifecycle, dedupe stale
+  rounds, evict done-work). Prune may still relocate obvious done-work
+  per the rule above, but leave the re-sequencing to the refactor.
+- `trajectory.md` over budget → move the oldest phases verbatim to
+  `archive/trajectory/trajectory-NNNN-YYYY-MM-DD-to-YYYY-MM-DD.md`
+  (sequence-numbered), keeping recent phases live. Add an
+  `archive/INDEX.md` row.
+- `decision-log.md` > entry budget OR > word budget OR oldest > age
+  budget → archive the oldest entries, keeping the latest live (at
+  least the read-tier latest 10, ideally a generous margin above it).
+  Default split is by whole month into `archive/decision-log-YYYY-MM.md`.
+  If a single month is genuinely unwieldy to grep, sub-split it by
+  date-range into `archive/decision-log-YYYY-MM-DD-to-YYYY-MM-DD.md`,
+  oldest entries first — but size alone isn't a reason to split; an
+  epoch stays one file unless browsability demands otherwise. Leave a one-line index
+  at the bottom of the live file pointing at each archive file. If only
+  the age budget is tripped (not the entry or word budget) and fewer
+  than ~5 entries lie beyond the latest-10 floor, note the overrun and
+  skip — the archive gain doesn't justify the prune (common on
+  low-velocity / sporadic projects).
 - `wish-list.md` over budget → do **not** archive. Propose a triage
   pass: for each open item, promote it into `backlog.md` (Current,
   Next, or Icebox) or cut it. Survivors move to the backlog; cuts are
   deleted. The file shrinks by triage, not by moving content to
   `archive/`.
-- Total hot whole-file set over budget → propose a memory-wide
-  review: archive or tighten the largest hot files using the
-  per-file actions above. Do not blanket-trim files already under
-  their own budget.
+- `archive/` chunk spanning multiple epochs → optionally split on the
+  epoch boundary (month / migration) for INDEX browsability, oldest
+  first. Size is not a trigger — a single epoch stays one file however
+  large, since cold archives are grepped, not loaded whole. Never
+  rewrite the entries themselves; only divide the file. Update
+  `archive/INDEX.md`.
+- A **reference doc** (`README`, `brief.md`, `architecture.md`,
+  `conventions.md`, project standards/process/infra) over its soft
+  guideline → reference docs are **not** prune targets; they don't
+  accrete. Leave it unless genuinely bloated, in which case propose
+  tightening it or splitting detail into a permanent contract file —
+  never strip it to hit a number.
+- Every-task read load feels heavy → there is no aggregate word cap to
+  "fix". Propose a structural review: is a reference doc bloated (tighten
+  per above), should a hot read move to **conditional** or **warm**, or
+  is `file-map.md` carrying accreted history (strip per above)? Do not
+  blanket-trim files already within their own budget/guideline.
 
 Present the proposal to the user. Wait for approval. Do not skip.
 
@@ -111,7 +146,8 @@ prompts.
   Nothing is lost.
 - Confirm archive files exist with the moved content, and the live
   file's index pointer(s) resolve to them.
-- Confirm `backlog.md` Active section is untouched.
+- Confirm the backlog Active open items are unchanged — except any
+  `[x]` done-work intentionally relocated to `trajectory.md` this pass.
 - If counts don't reconcile, or a file you did not prune shows as
   modified, suspect a concurrent edit from a parallel task — stop,
   report it, and do not "fix" it. It is not part of the prune.
@@ -122,7 +158,16 @@ prompts.
 - Append a one-line entry to `decision-log.md` (top, append-only):
   the date, "Pruned project memory", and a one-line summary of
   what was archived (e.g. "decision-log April 2026 → archive,
-  backlog 60 shipped → archive").
+  12 shipped items → trajectory").
+- Maintain `pm_skills/project/archive/INDEX.md` (create it if missing):
+  add a row per new or split archive file — filename, type
+  (decision-log / trajectory / file-map / backup), date range or
+  sequence number, entry/word count, and a one-line description. Put an
+  entry/word count only on **frozen archive rows**, never on a live-file
+  row (e.g. `../decision-log.md (live)`) — the count goes stale the
+  moment this prune appends its own record entry. The INDEX is the
+  browsable map of cold storage; keep it current so a reader never has
+  to open a chunk to know what it holds.
 - If new archive files were created, add them to
   `pm_skills/project/file-map.md` under a new "Archive" section
   if one does not already exist.
@@ -135,11 +180,15 @@ prompts.
 - Append-only files (`decision-log.md`): move entries verbatim.
   Never rewrite. Never collapse. Never summarise on archive.
 - Live files keep the latest content; archives keep history.
-- Archives are append-only too — never rewrite an existing archive.
+- Archives are append-only too — never rewrite an existing archive's
+  entries. Splitting a chunk on an epoch boundary into smaller
+  sequential chunks is allowed (it divides the file, it does not rewrite
+  entries) and must update `archive/INDEX.md`.
 - If multiple files exceed budget, prune them all in one pass to
   avoid multiple sessions of meta-cost.
 - If unsure whether to archive a piece of content, leave it in the
   live file. False positives are worse than false negatives —
   content can always be archived next session.
-- Tier names ("hot whole-file", "hot sectional", "cold") and
-  budget numbers come from AGENTS.md only. Do not redefine here.
+- Tier names ("hot whole-file" — reference / accreting / conditional —
+  "hot sectional", "warm", "cold") and budget numbers come from
+  AGENTS.md only. Do not redefine here.

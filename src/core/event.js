@@ -49,3 +49,19 @@ export function normalizeHookEvent(raw, now = () => new Date().toISOString()) {
     responseChars: responseText ? responseText.length : null,
   };
 }
+
+/**
+ * Stable identity for a turn, used to guarantee one usage record per event
+ * across concurrent consumers (and to dedupe the log on read/cleanup). Prefers
+ * the unique `executionId`; falls back to trajectory + timestamp. Returns null
+ * when nothing identifies the turn — such records are NEVER collapsed, because
+ * we cannot safely assume they are the same turn.
+ * @param {{executionId?: string|null, trajectoryId?: string|null, timestamp?: string|null}} o
+ * @returns {string|null}
+ */
+export function dedupKey(o) {
+  if (!o || typeof o !== 'object') return null;
+  if (o.executionId) return `e:${o.executionId}`;
+  if (o.trajectoryId && o.timestamp) return `t:${o.trajectoryId}:${o.timestamp}`;
+  return null;
+}

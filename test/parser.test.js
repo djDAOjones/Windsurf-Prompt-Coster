@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { parseTranscript } from '../src/core/parser.js';
+
+const cascadeFixture = fs.readFileSync(
+  fileURLToPath(new URL('./fixtures/transcript.cascade.jsonl', import.meta.url)),
+  'utf8',
+);
 
 describe('parseTranscript', () => {
   it('extracts the last assistant message as output and the rest as input', () => {
@@ -65,5 +72,47 @@ describe('parseTranscript', () => {
     expect(parseTranscript('').ok).toBe(false);
     expect(parseTranscript(null).ok).toBe(false);
     expect(parseTranscript('   \n  ').ok).toBe(false);
+  });
+});
+
+describe('parseTranscript — Cascade action-stream schema', () => {
+  it('counts only the latest turn\'s planner_response as output', () => {
+    const turn = parseTranscript(cascadeFixture);
+    expect(turn.ok).toBe(true);
+    expect(turn.outputText).toContain('Vitest test');
+    expect(turn.outputText).toContain('The test passes');
+    // Prior turn's assistant text must NOT be counted as this turn's output.
+    expect(turn.outputText).not.toContain('You can read a file');
+    expect(turn.outputText).not.toContain('relevant function');
+    expect(turn.outputChars).toBeGreaterThan(0);
+  });
+
+  it('treats prior turns, the user message, and tool/file output as input context', () => {
+    const turn = parseTranscript(cascadeFixture);
+    expect(turn.inputText).toContain('Second question'); // this turn's user message
+    expect(turn.inputText).toContain('First question'); // prior turn (resent context)
+    expect(turn.inputText).toContain('You can read a file'); // prior assistant = context, not output
+    expect(turn.inputText).toContain('npm test'); // tool/command output
+    expect(turn.inputChars).toBeGreaterThan(0);
+  });
+
+  it('treats the whole doc as one turn when there is no user_input line', () => {
+    const jsonl = JSON.stringify({ status: 'done', type: 'planner_response', planner_response: { response: 'only answer' } });
+    const turn = parseTranscript(jsonl);
+    expect(turn.ok).toBe(true);
+    expect(turn.outputText).toContain('only answer');
+  });
+
+  it('tolerates unknown action types and malformed lines', () => {
+    const jsonl = [
+      JSON.stringify({ status: 'done', type: 'user_input', user_input: { user_response: 'q' } }),
+      '{ not json',
+      JSON.stringify({ status: 'done', type: 'some_new_tool', some_new_tool: { foo: 'bar' } }),
+      JSON.stringify({ status: 'done', type: 'planner_response', planner_response: { response: 'final answer' } }),
+    ].join('\n');
+    const turn = parseTranscript(jsonl);
+    expect(turn.ok).toBe(true);
+    expect(turn.outputText).toContain('final answer');
+    expect(turn.inputText).toContain('bar');
   });
 });

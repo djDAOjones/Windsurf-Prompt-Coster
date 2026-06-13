@@ -3,7 +3,16 @@ import os from 'node:os';
 import fs from 'node:fs';
 import path from 'node:path';
 import { appendInbox, readNewEvents, commitOffset } from '../src/log/inbox.js';
-import { appendUsage, readUsage, summarize } from '../src/log/usageLog.js';
+import {
+  appendUsage,
+  appendUsageOnce,
+  readUsage,
+  summarize,
+  claimEvent,
+  dedupRecords,
+  rewriteUsageDeduped,
+} from '../src/log/usageLog.js';
+import { resolvePaths } from '../src/config/paths.js';
 
 let dir;
 beforeEach(() => {
@@ -76,5 +85,64 @@ describe('usage log', () => {
     expect(s.todayUsd).toBeCloseTo(0.03, 6);
     expect(s.todayCount).toBe(2);
     expect(s.byModel['GPT-4o'].count).toBe(3);
+  });
+});
+
+describe('claim + dedup (one turn, one record)', () => {
+  it('claimEvent lets the first caller win and blocks the rest for the same key', () => {
+    expect(claimEvent('e:abc')).toBe(true);
+    expect(claimEvent('e:abc')).toBe(false);
+    expect(claimEvent('e:other')).toBe(true);
+  });
+
+  it('claimEvent always allows a null key (unidentifiable turn)', () => {
+    expect(claimEvent(null)).toBe(true);
+    expect(claimEvent(null)).toBe(true);
+  });
+
+  it('appendUsageOnce records a keyed turn once and skips the duplicate', () => {
+    const rec = { v: 1, executionId: 'exec_42', model: 'GPT-4o', estimatedCostUsd: 0.01 };
+    expect(appendUsageOnce(rec)).toBe(true);
+    expect(appendUsageOnce({ ...rec, estimatedCostUsd: 0.99 })).toBe(false);
+    expect(readUsage()).toHaveLength(1);
+  });
+
+  it('appendUsageOnce treats null-key records as always distinct', () => {
+    expect(appendUsageOnce({ v: 1, model: 'A' })).toBe(true);
+    expect(appendUsageOnce({ v: 1, model: 'A' })).toBe(true);
+    expect(readUsage()).toHaveLength(2);
+  });
+
+  it('dedupRecords keeps the first per key and never collapses null-key records', () => {
+    const out = dedupRecords([
+      { executionId: 'e1', estimatedCostUsd: 0.01 },
+      { executionId: 'e1', estimatedCostUsd: 0.99 },
+      { model: 'no-id' },
+      { model: 'no-id' },
+    ]);
+    expect(out).toHaveLength(3);
+    expect(out[0].estimatedCostUsd).toBe(0.01);
+  });
+
+  it('summarize collapses duplicate-key records before tallying', () => {
+    const dupe = { executionId: 'e1', model: 'GPT-4o', estimatedCostUsd: 0.01, costStatus: 'estimated', loggedAt: '2026-05-31T09:00:00' };
+    const s = summarize([dupe, { ...dupe }], new Date('2026-05-31T10:00:00'));
+    expect(s.count).toBe(1);
+    expect(s.totalUsd).toBeCloseTo(0.01, 6);
+  });
+
+  it('rewriteUsageDeduped removes duplicates and writes a backup', () => {
+    appendUsage({ executionId: 'e1', model: 'GPT-4o', estimatedCostUsd: 0.01 });
+    appendUsage({ executionId: 'e1', model: 'GPT-4o', estimatedCostUsd: 0.01 });
+    appendUsage({ executionId: 'e2', model: 'GPT-4o', estimatedCostUsd: 0.02 });
+    expect(rewriteUsageDeduped()).toEqual({ total: 3, kept: 2, removed: 1 });
+    expect(readUsage()).toHaveLength(2);
+    expect(fs.existsSync(`${resolvePaths().usageLog}.bak`)).toBe(true);
+  });
+
+  it('rewriteUsageDeduped is a no-op when there are no duplicates', () => {
+    appendUsage({ executionId: 'e1', model: 'GPT-4o', estimatedCostUsd: 0.01 });
+    expect(rewriteUsageDeduped()).toEqual({ total: 1, kept: 1, removed: 0 });
+    expect(fs.existsSync(`${resolvePaths().usageLog}.bak`)).toBe(false);
   });
 });

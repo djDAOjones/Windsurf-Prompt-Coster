@@ -28,28 +28,47 @@ explain concepts back unless asked.
 
 ### Read tiers
 
-Project memory has three read tiers. Load only what each tier
+Project memory has four read tiers. Load only what each tier
 prescribes — this keeps session context bounded.
 
-**Hot whole-file** — read every task:
+**Hot whole-file** — read every task. Three groups, budgeted differently:
+
+_Reference docs_ — written once to a natural size; they do not accrete,
+so each carries only a soft size guideline, **not** a prune target:
 
 - `README.md`
 - `pm_skills/project/brief.md`
 - `pm_skills/project/architecture.md`
 - `pm_skills/project/conventions.md` (if it exists)
+
+_Accreting_ — read every task, but grows as agents append per-task
+roles/notes, so it carries a hard, prunable budget:
+
 - `pm_skills/project/file-map.md`
-- `UI-STANDARDS.md` — only when the task touches UI, controls, text,
-  states, accessibility, or user-facing behaviour.
-- `DEV-INFRASTRUCTURE.md` (if it exists) — only when the task touches
-  build, dev server, versioning, or scripts.
+
+_Conditional_ — read **only** when the task touches the domain (a task
+usually touches one, rarely both), so **not** counted in the every-task
+read-load review:
+
+- `UI-STANDARDS.md` — UI, controls, text, states, accessibility, or
+  user-facing behaviour.
+- `DEV-INFRASTRUCTURE.md` (if it exists) — build, dev server,
+  versioning, or scripts.
 
 **Hot sectional** — read by section only:
 
-- `pm_skills/project/backlog.md` — read only the **Active** section.
-  Read **Completed** only when verifying shipped behaviour.
+- `pm_skills/project/backlog.md` — read only the **Active** section
+  (open work: Current, Next, Icebox). Shipped work is not here — see
+  `trajectory.md`.
 - `pm_skills/project/decision-log.md` — read only the **latest 10
   entries**. Search older entries on demand when prior-decision
   context is needed.
+
+**Warm** — read on demand, not auto-read every task:
+
+- `pm_skills/project/trajectory.md` — the shipped-work narrative. Read
+  during `roadmap-refactor.md`, release work, or when reconstructing
+  what already shipped.
 
 **Cold** — never auto-read:
 
@@ -61,19 +80,25 @@ prescribes — this keeps session context bounded.
 
 ### Memory size budgets
 
-Whole-read files have soft word budgets. The end-of-task update
-check flags overruns and proposes running
-`pm_skills/prompts/prune-memory.md`. Do not auto-prune — always
-propose first.
+Memory files have word/entry budgets: **hard, prunable** limits on
+accreting files (`file-map.md`, the sectional `backlog.md` /
+`decision-log.md`, `trajectory.md`) and **soft** size guidelines on
+reference docs (see the table). The end-of-task update check flags
+overruns and proposes running `pm_skills/prompts/prune-memory.md`. Do
+not auto-prune — always propose first.
 
 | Scope | Soft limit | Action when exceeded |
 | --- | --- | --- |
-| Any single hot whole-file read | 2,000 words | Propose summarising or splitting. |
-| Total hot whole-file set | 8,000 words | Propose memory-wide review. |
-| `backlog.md` Completed items | 40 entries | Propose archiving oldest, keeping the most recent 30, to `archive/backlog-shipped.md`. |
-| `decision-log.md` total entries | 20 entries | Propose an archive split to `archive/decision-log-*.md` (by whole month; by date-range when one month alone exceeds the budget). Keep at least the read-tier latest 10 live. |
-| `decision-log.md` oldest entry age | 90 days | Propose an archive split, oldest months first — but only when ≥ 5 entries lie beyond the latest-10 read-tier floor (live log ≥ 15). Below that, note the overrun and skip: on low-velocity / sporadic projects the age budget keeps tripping with little to move, so entry-count and word budgets are the meaningful triggers. |
+| Reference doc (`README`, `brief.md`, `architecture.md`, `conventions.md`, + project standards/process/infra docs) | soft ~3,500 words each | Not a prune target — reference docs don't accrete. If one is genuinely bloated, tighten it or split detail into a permanent contract file; never strip to hit a number. |
+| `file-map.md` (accreting) | 2,000 words | Propose `prune-memory.md`: strip accreted history (task tags, dates, test counts) to `archive/file-map-*-historical.md`, keep current roles. Floor = the irreducible current-role list; on a large codebase that may exceed 2,000, which is fine — strip noise, not signal. |
+| Every-task read load | structural (no aggregate word cap) | A fixed sum fires permanently on a mature project (≥ 5 hot files × the 2,000 file budget > any flat cap), so there is none. Healthy = each file within its own row above. If the always-read set keeps growing, review whether a hot read should move to _conditional_ or _warm_, or whether a reference doc has bloated. |
+| `backlog.md` Active | 1,500 words **or** ~40 open items (whichever trips first) | Propose `roadmap-refactor.md`: restructure by lifecycle, evict done-work, dedupe stale rounds. A low item count with high words means items are too verbose — tighten them. |
+| `backlog.md` shipped work | 0 — done `[x]` items do not live here | Move each to `trajectory.md` (one line) + `decision-log.md` (the why). Flagged by `end-of-task.md` and `doctor-memory.md`. |
+| `trajectory.md` | 2,000 words | Propose archiving the oldest phases to `archive/trajectory/`, keeping `archive/INDEX.md` current. |
+| `decision-log.md` live log | 20 entries (primary) **or** ~6,000 words | Propose an archive split to `archive/decision-log-*.md` (by whole month; by date-range when one month alone exceeds a budget). Entry count is the primary trigger; the word budget is a secondary guard against runaway entries — a healthy entry is ~150–300 words (Decision, Rationale, Alternatives, Link), not an essay. Keep at least the read-tier latest 10 live. |
+| `decision-log.md` oldest entry age | 90 days | Propose an archive split, oldest first — but only when ≥ 5 entries lie beyond the latest-10 read-tier floor (live log ≥ 15). Below that, note the overrun and skip: on low-velocity / sporadic projects the age budget keeps tripping with little to move, so the entry-count and word budgets are the meaningful triggers. |
 | `wish-list.md` open items | 25 items | Propose a triage pass (promote each into `backlog.md`, or cut). Never archive — the wish-list shrinks by triage, not by moving content to `archive/`. |
+| `archive/` chunk | one epoch per file (whole month / migration boundary) | Chunk cold archives by **sequence boundary for INDEX browsability**, not size — they're never auto-read (grep + line-range only), so word count barely matters and an epoch bounds its own growth. Sub-split a single epoch only if it's genuinely unwieldy to grep; never split or merge epochs just to hit a number. Maintain `archive/INDEX.md`. |
 
 ### Workflow
 
@@ -239,24 +264,46 @@ exceptions) are in `pm_skills/project/conventions.md`.
 
 ## Testing
 
-<!-- CUSTOMISE: Replace the defaults below with this project's actual
-     testing policy. See init.md Step 6 for stage examples. -->
+Tests protect invariants — behaviours that would do real damage if they
+silently broke. Write a test to prove an invariant, not to chase a
+coverage number; coverage is a warning light, never a target.
 
-- Run the project's build and test steps after every change. If no
-  automated test runner exists yet, verify the change manually and
-  note what was checked.
-- Never delete or weaken existing tests.
-- Add a test for any new model method or utility function when a
-  test runner is available.
+**Named categories, never "add tests" in the abstract.** When a change
+warrants tests, cover the categories that apply: happy path, empty,
+error, boundary, permission/gating, regression (one per fixed bug), and
+a persistence round-trip (write → reload) for stateful changes.
+**"Not applicable" is a valid outcome** — if no meaningful invariant is
+at risk, say so rather than manufacture tests.
 
-Project-specific testing policy (framework, coverage bar, what to
-test) is in `pm_skills/project/conventions.md`.
+**Fast and hermetic.** Prefer in-process injection, fakes, and temp
+directories over live servers and real I/O — fast enough to run on
+every change.
+
+**Two layers.** The automated safety net never replaces the manual gate
+(real browsers, devices, permissions, rehearsal). Name what only a
+human can verify.
+
+**Hard rules.**
+
+- Run build and tests after every change; if no runner exists yet,
+  verify manually and note what was checked.
+- Never silently delete, skip, or weaken a test to make a change pass.
+  If a test is genuinely obsolete because the intended behaviour
+  changed, say so and update or remove it as part of the approved
+  change.
+- Never write hollow tests (assertion-free, snapshot-everything, or
+  mocking the unit under test). A test that cannot fail protects
+  nothing.
+- Rigour ramps with maturity; before invariants stabilise (e.g. the
+  first MVP build), deferring tests and saying so is correct.
+
+Tooling and project-specific policy (runner, config, what to test) live
+in `pm_skills/project/conventions.md`.
 
 ---
 
 ## Files to never edit
 
-- `pm-skills/` — the framework clone, kept only as the upgrade reference.
 - `~/.cascade-cost-meter/usage.jsonl` — a user's real usage history (tests use
   fixtures, never the live log).
 - `.editorconfig`, `.markdownlint.json` — shared mechanical config.
@@ -285,8 +332,8 @@ To make a new per-turn field survive into history and tooling:
 | `AGENTS.md` | Hard rules, invariants, data model, anti-patterns | Major architectural or design decisions change |
 | `UI-STANDARDS.md` | UI, accessibility, usability rules | New token systems or UI conventions established |
 | `DEV-INFRASTRUCTURE.md` | Build, dev server, versioning, scripts | Build or deployment decisions change |
-| `project/` memory files | Brief, architecture, backlog, wish-list, file map, conventions, decision log | End of every task session |
-| `project/archive/` | Historical content moved out of hot files | Only via `pm_skills/prompts/prune-memory.md` |
+| `project/` memory files | Brief, architecture, backlog, wish-list, trajectory, file map, conventions, decision log | End of every task session |
+| `project/archive/` | Historical content moved out of hot files, indexed in `archive/INDEX.md` | Only via `pm_skills/prompts/prune-memory.md` or `roadmap-refactor.md` |
 
 When in doubt: unconditional invariant → `AGENTS.md`. UI convention →
 `UI-STANDARDS.md`. Build/dev rule → `DEV-INFRASTRUCTURE.md`. Evolving
@@ -307,6 +354,13 @@ context → `project/`. Historical content → `project/archive/`.
 - Letting the `wish-list.md` inbox become a write-only graveyard, or
   scoping or estimating its items at capture time. Capture is one
   line; judgement happens at triage.
+- Leaving shipped (`[x]`) work in the backlog. Completed work moves to
+  `trajectory.md` (one line) plus `decision-log.md` (the why); the
+  backlog holds open work only.
+- Letting the backlog become an audit trail of dated rounds, or
+  narrating a shipped item in full in both the backlog and the
+  decision-log. Compress on ship; run `roadmap-refactor.md` to repair
+  drift.
 
 Project-specific anti-patterns are in
 `pm_skills/project/conventions.md` under

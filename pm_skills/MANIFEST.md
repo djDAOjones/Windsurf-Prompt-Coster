@@ -35,6 +35,7 @@ project**, not inside this source repo.
 | `pm_skills/project/architecture.md` | `project-memory` |
 | `pm_skills/project/conventions.md` | `project-memory` |
 | `pm_skills/project/backlog.md` | `project-memory` |
+| `pm_skills/project/trajectory.md` | `project-memory` |
 | `pm_skills/project/wish-list.md` | `project-memory` |
 | `pm_skills/project/file-map.md` | `project-memory` |
 | `pm_skills/project/decision-log.md` | `project-memory` |

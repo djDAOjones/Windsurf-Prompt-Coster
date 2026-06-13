@@ -30,7 +30,11 @@ is the forcing function that stops the inbox becoming a graveyard:
 
 - List the open items, one line each.
 - For each, recommend **promote** (move it into `backlog.md` under
-  Current, Next, or Icebox) or **cut** (delete the line).
+  Current, Next, or Icebox) or **cut** (delete the line). When
+  promoting, don't just append — place it *relative to* the items
+  already in that section and say, in one line, whether it ranks
+  above or below them and why. This keeps the pick in step 3 reading
+  off a current order rather than a stale one.
 - Apply only what the user confirms. Never auto-promote. Promoting
   moves the item out of the wish-list; cutting deletes it.
 - If the wish-list is empty, say so in one line and move on.
